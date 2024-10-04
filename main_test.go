@@ -19,3 +19,7 @@ func TestTaskControl(t *testing.T) {
 	}
 	wg.Wait()
 }
+
+func TestPrint(t *testing.T) {
+	fmt.Println("hello")
+}
