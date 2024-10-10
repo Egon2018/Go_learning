@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestTaskControl(t *testing.T) {
@@ -13,8 +14,8 @@ func TestTaskControl(t *testing.T) {
 
 	for i := 0; i < taskNum; i++ {
 		go func(i int) {
+			defer wg.Done()
 			fmt.Println("info", i)
-			wg.Done()
 		}(i)
 	}
 	wg.Wait()
@@ -22,4 +23,34 @@ func TestTaskControl(t *testing.T) {
 
 func TestPrint(t *testing.T) {
 	fmt.Println("hello")
+}
+
+func TestA(t *testing.T) {
+	test := make(chan int, 10)
+	var wg = sync.WaitGroup{}
+	wg.Add(2)
+	go func(info chan int) {
+		defer wg.Done()
+		for {
+			select {
+			case val, ok := <-test:
+				if !ok {
+					t.Logf("Channel Closed!")
+					return
+				}
+
+				t.Logf("data %d\n", val)
+			}
+		}
+	}(test)
+
+	go func() {
+		defer wg.Done()
+		test <- 1
+		time.Sleep(1 * time.Second)
+		test <- 2
+
+		close(test)
+	}()
+	wg.Wait()
 }
